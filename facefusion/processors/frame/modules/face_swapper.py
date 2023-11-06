@@ -210,7 +210,11 @@ def prepare_source_face(source_face : Face) -> Face:
 
 
 def prepare_source_embedding(source_face : Face) -> Embedding:
-	source_embedding = source_face.normed_embedding.reshape(1, -1)
+	model_template = get_options('model').get('name')
+	if model_template == 'ghost':
+		source_embedding = source_face.embedding.reshape(1, -1)
+	else:
+		source_embedding = source_face.normed_embedding.reshape(1, -1)
 	return source_embedding
 
 
