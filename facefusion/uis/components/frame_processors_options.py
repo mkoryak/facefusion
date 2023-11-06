@@ -75,6 +75,8 @@ def listen() -> None:
 
 def update_face_swapper_model(face_swapper_model : str) -> gradio.Dropdown:
 	frame_processors_globals.face_swapper_model = face_swapper_model
+	if face_swapper_model == 'ghost_unet_1_block' or face_swapper_model == 'ghost_unet_2_block' or face_swapper_model == 'ghost_unet_3_block':
+		facefusion.globals.face_recognizer_model = 'arcface_ghost'
 	if face_swapper_model == 'inswapper_128' or face_swapper_model == 'inswapper_128_fp16':
 		facefusion.globals.face_recognizer_model = 'inswapper_webface'
 	if face_swapper_model == 'simswap_244':

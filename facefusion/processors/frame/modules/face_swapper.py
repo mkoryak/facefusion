@@ -25,10 +25,35 @@ THREAD_LOCK : threading.Lock = threading.Lock()
 NAME = 'FACEFUSION.FRAME_PROCESSOR.FACE_SWAPPER'
 MODELS : Dict[str, ModelValue] =\
 {
+	'ghost_unet_1_block':
+	{
+		'url': 'https://github.com/harisreedhar/Face-Swappers-ONNX/releases/download/ghost/ghost_unet_1_block.onnx',
+		'path': resolve_relative_path('../.assets/models/ghost_unet_1_block.onnx'),
+		'name': 'ghost',
+		'template': 'ghost',
+		'size': (112, 256)
+	},
+	'ghost_unet_2_block':
+	{
+		'url': 'https://github.com/harisreedhar/Face-Swappers-ONNX/releases/download/ghost/ghost_unet_2_block.onnx',
+		'path': resolve_relative_path('../.assets/models/ghost_unet_2_block.onnx'),
+		'name': 'ghost',
+		'template': 'ghost',
+		'size': (112, 256)
+	},
+	'ghost_unet_3_block':
+	{
+		'url': 'https://github.com/harisreedhar/Face-Swappers-ONNX/releases/download/ghost/ghost_unet_3_block.onnx',
+		'path': resolve_relative_path('../.assets/models/ghost_unet_3_block.onnx'),
+		'name': 'ghost',
+		'template': 'ghost',
+		'size': (112, 256)
+	},
 	'inswapper_128':
 	{
 		'url': 'https://github.com/facefusion/facefusion-assets/releases/download/models/inswapper_128.onnx',
 		'path': resolve_relative_path('../.assets/models/inswapper_128.onnx'),
+		'name': 'inswapper',
 		'template': 'arcface',
 		'size': (128, 128)
 	},
@@ -36,6 +61,7 @@ MODELS : Dict[str, ModelValue] =\
 	{
 		'url': 'https://github.com/facefusion/facefusion-assets/releases/download/models/inswapper_128_fp16.onnx',
 		'path': resolve_relative_path('../.assets/models/inswapper_128_fp16.onnx'),
+		'name': 'inswapper',
 		'template': 'arcface',
 		'size': (128, 128)
 	},
@@ -43,6 +69,7 @@ MODELS : Dict[str, ModelValue] =\
 	{
 		'url': 'https://github.com/facefusion/facefusion-assets/releases/download/models/simswap_244.onnx',
 		'path': resolve_relative_path('../.assets/models/simswap_244.onnx'),
+		'name': 'simswap',
 		'template': 'arcface',
 		'size': (112, 224)
 	}
@@ -107,6 +134,8 @@ def register_args(program : ArgumentParser) -> None:
 def apply_args(program : ArgumentParser) -> None:
 	args = program.parse_args()
 	frame_processors_globals.face_swapper_model = args.face_swapper_model
+	if args.face_swapper_model == 'ghost_unet_1_block' or args.face_swapper_model == 'ghost_unet_2_block' or args.face_swapper_model == 'ghost_unet_3_block':
+		facefusion.globals.face_recognizer_model = 'ghost_arcface'
 	if args.face_swapper_model == 'inswapper_128' or args.face_swapper_model == 'inswapper_128_fp16':
 		facefusion.globals.face_recognizer_model = 'inswapper_webface'
 	if args.face_swapper_model == 'simswap_244':
@@ -186,15 +215,23 @@ def prepare_source_embedding(source_face : Face) -> Embedding:
 
 
 def prepare_crop_frame(crop_frame : Frame) -> Frame:
-	crop_frame = crop_frame / 255.0
+	model_template = get_options('model').get('name')
+	if model_template == 'ghost':
+		crop_frame = crop_frame / 127.5 - 1
+	else:
+		crop_frame = crop_frame / 255.0
 	crop_frame = crop_frame[:, :, ::-1].transpose(2, 0, 1)
 	crop_frame = numpy.expand_dims(crop_frame, axis = 0).astype(numpy.float32)
 	return crop_frame
 
 
 def normalize_crop_frame(crop_frame : Frame) -> Frame:
+	model_template = get_options('model').get('name')
 	crop_frame = crop_frame.transpose(1, 2, 0)
-	crop_frame = (crop_frame * 255.0).round()
+	if model_template == 'ghost':
+		crop_frame = (crop_frame * 127.5 + 127.5).round()
+	else:
+		crop_frame = (crop_frame * 255.0).round()
 	crop_frame = crop_frame[:, :, ::-1].astype(numpy.uint8)
 	return crop_frame
 

@@ -6,6 +6,7 @@ import numpy
 
 from facefusion.typing import Bbox, Kps, Frame, Matrix, Template
 
+
 TEMPLATES : Dict[Template, numpy.ndarray[Any, Any]] =\
 {
 	'arcface': numpy.array(
@@ -15,6 +16,14 @@ TEMPLATES : Dict[Template, numpy.ndarray[Any, Any]] =\
 		[ 56.0252, 71.7366 ],
 		[ 41.5493, 92.3655 ],
 		[ 70.7299, 92.2041 ]
+	]),
+	'ghost': numpy.array(
+	[
+		[ 39.7300, 51.1380 ],
+		[ 72.2700, 51.1380 ],
+		[ 56.0000, 68.4930 ],
+		[ 42.4630, 87.0100 ],
+		[ 69.5370, 87.0100 ]
 	]),
 	'ffhq': numpy.array(
 	[
