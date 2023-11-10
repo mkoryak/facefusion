@@ -1,7 +1,7 @@
 from typing import Any, List, Optional
+from concurrent.futures import ThreadPoolExecutor
 from functools import lru_cache
 from pathlib import Path
-
 from tqdm import tqdm
 import glob
 import mimetypes
@@ -181,22 +181,27 @@ def is_video(video_path : str) -> bool:
 
 
 def conditional_download(download_directory_path : str, urls : List[str]) -> None:
-	for url in urls:
-		download_file_path = os.path.join(download_directory_path, os.path.basename(url))
-		total = get_download_size(url)
-		if is_file(download_file_path):
-			initial = os.path.getsize(download_file_path)
-		else:
-			initial = 0
-		if initial < total:
-			bar_format = '{l_bar}{bar}| {n_fmt}/{total_fmt}]'
-			with tqdm(total = total, initial = initial, desc = wording.get('downloading'), unit = 'B', unit_scale = True, unit_divisor = 1024, bar_format = bar_format) as progress:
-				subprocess.Popen([ 'curl', '--create-dirs', '--silent', '--insecure', '--location', '--continue-at', '-', '--output', download_file_path, url ])
-				current = initial
-				while current < total:
-					if is_file(download_file_path):
-						current = os.path.getsize(download_file_path)
-						progress.update(current - progress.n)
+	with ThreadPoolExecutor() as executor:
+		for url in urls:
+			executor.submit(download_file, download_directory_path, url)
+
+
+def download_file(download_directory_path : str, url : str):
+	download_file_path = os.path.join(download_directory_path, os.path.basename(url))
+	total = get_download_size(url)
+	if is_file(download_file_path):
+		initial = os.path.getsize(download_file_path)
+	else:
+		initial = 0
+	if initial < total:
+		bar_format = '{l_bar}{bar}| {n_fmt}/{total_fmt}]'
+		with tqdm(total = total, initial = initial, desc = wording.get('downloading'), unit_scale = True, unit_divisor = 1024, bar_format = bar_format) as progress:
+			subprocess.Popen([ 'curl', '--create-dirs', '--silent', '--insecure', '--location', '--continue-at', '-', '--output', download_file_path, url ])
+			current = initial
+			while current < total:
+				if is_file(download_file_path):
+					current = os.path.getsize(download_file_path)
+					progress.update(current - progress.n)
 
 
 @lru_cache(maxsize = None)
