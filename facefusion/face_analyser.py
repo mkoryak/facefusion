@@ -26,15 +26,15 @@ MODELS : Dict[str, ModelValue] =\
 		'url': 'https://github.com/facefusion/facefusion-assets/releases/download/models/yunet_2023mar.onnx',
 		'path': resolve_relative_path('../.assets/models/face_detection_yunet_2023mar.onnx')
 	},
-	'face_recognizer_inswapper_webface':
-	{
-		'url': 'https://github.com/facefusion/facefusion-assets/releases/download/models/webface_600k_r50.onnx',
-		'path': resolve_relative_path('../.assets/models/webface_600k_r50.onnx')
-	},
 	'face_recognizer_ghost_arcface':
 	{
 		'url': 'https://github.com/harisreedhar/Face-Swappers-ONNX/releases/download/ghost/ghost_arcface_backbone.onnx',
 		'path': resolve_relative_path('../.assets/models/ghost_arcface_backbone.onnx')
+	},
+	'face_recognizer_inswapper_webface':
+	{
+		'url': 'https://github.com/facefusion/facefusion-assets/releases/download/models/webface_600k_r50.onnx',
+		'path': resolve_relative_path('../.assets/models/webface_600k_r50.onnx')
 	},
 	'face_recognizer_simswap_arcface':
 	{
@@ -58,10 +58,10 @@ def get_face_analyser() -> Any:
 				face_detector = onnxruntime.InferenceSession(MODELS.get('face_detector_retinaface').get('path'), providers = facefusion.globals.execution_providers)
 			if facefusion.globals.face_detector_model == 'yunet':
 				face_detector = cv2.FaceDetectorYN.create(MODELS.get('face_detector_yunet').get('path'), '', (0, 0))
+			if facefusion.globals.face_recognizer_model == 'ghost_arcface':
+				face_recognizer = onnxruntime.InferenceSession(MODELS.get('face_recognizer_ghost_arcface').get('path'), providers = facefusion.globals.execution_providers)
 			if facefusion.globals.face_recognizer_model == 'inswapper_webface':
 				face_recognizer = onnxruntime.InferenceSession(MODELS.get('face_recognizer_inswapper_webface').get('path'), providers = facefusion.globals.execution_providers)
-			if facefusion.globals.face_recognizer_model == 'ghost_arcface':
-				face_recognizer = onnxruntime.InferenceSession(MODELS.get('face_recognizer_arcface_ghost').get('path'), providers = facefusion.globals.execution_providers)
 			if facefusion.globals.face_recognizer_model == 'simswap_arcface':
 				face_recognizer = onnxruntime.InferenceSession(MODELS.get('face_recognizer_simswap_arcface').get('path'), providers = facefusion.globals.execution_providers)
 			gender_age = onnxruntime.InferenceSession(MODELS.get('gender_age').get('path'),  providers=facefusion.globals.execution_providers)
@@ -87,8 +87,8 @@ def pre_check() -> bool:
 		[
 			MODELS.get('face_detector_retinaface').get('url'),
 			MODELS.get('face_detector_yunet').get('url'),
-			MODELS.get('face_recognizer_inswapper_webface').get('url'),
 			MODELS.get('face_recognizer_ghost_arcface').get('url'),
+			MODELS.get('face_recognizer_inswapper_webface').get('url'),
 			MODELS.get('face_recognizer_simswap_arcface').get('url'),
 			MODELS.get('gender_age').get('url')
 		]
